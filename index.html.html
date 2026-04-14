@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>英語單字王（完整下載版）</title>
+
+<style>
+body {font-family: Arial; padding:15px; background:#f5f5f5;}
+.card {background:white; padding:20px; border-radius:12px; text-align:center;}
+.question {font-size:28px; margin-bottom:15px;}
+button {width:100%; padding:12px; margin-top:8px; border:none; border-radius:8px;}
+input {width:100%; padding:12px; font-size:18px;}
+</style>
+</head>
+
+<body>
+
+<h2>📱 英語單字王（完整題庫）</h2>
+
+<div class="card">
+<div id="qnum"></div>
+<div id="question" class="question"></div>
+
+<button onclick="speak()">🔊 播放英文</button>
+
+<input id="answer" placeholder="請輸入英文">
+
+<button onclick="next()">下一題</button>
+<button onclick="review()">錯題複習</button>
+<button onclick="rank()">排行榜</button>
+</div>
+
+<div id="ranking"></div>
+
+<script>
+
+// ✅ 100%完整題庫
+const bank = [
+["as","如同"],["if","如果"],["so","所以"],["gym","健身房"],
+["ago","之前"],["jam","果醬"],["job","工作"],["low","低"],
+["key","鑰匙"],["May","五月"],["let","讓"],["use","用"],
+["yet","但是"],["camp","露營"],["bank","銀行"],["cave","洞穴"],
+["belt","皮帶"],["chat","聊天"],["dark","黑暗"],["club","社團"],
+["date","日期"],["fall","秋天"],["deep","深"],["full","充分"],
+["each","每一個"],["gate","大門"],["east","東方"],["gold","黃金"],
+["hate","討厭"],["half","一半"],["hear","聽到"],["hard","困難的"],
+["hill","山丘"],["hour","小時"],["hole","孔洞"],["join","加入"],
+["hope","希望"],["July","七月"],["June","六月"],["keep","保持"],
+["just","只是"],["kind","友善的"],["king","國王"],["lift","舉"],
+["knee","膝蓋"],["math","數學"],["land","降落"],["meal","餐"],
+["left","左邊"],["mind","在意"],["next","下一個"],["past","過去"],
+["once","一次"],["path","路徑"],["oven","烤箱"],["poor","窮的"],
+["over","過度"],["quiz","測驗"],["race","比賽"],["soon","不久"],
+["salt","鹽巴"],["stay","待"],["save","保存"],["team","隊伍"],
+["spot","地點"],["tent","帳篷"],["tour","旅行"],["wife","老婆"],
+["view","景色"],["wild","野外的"],["warm","溫暖的"],["will","將會"],
+["west","西方"],["wish","希望"],["wood","木頭"],["April","四月"],
+["zero","零"],["agree","同意"],["after","之後"],["break","打破"],
+["alone","單獨"],["begin","開始"],["cheap","便宜"],["Earth","地球"],
+["chess","西洋棋"],["elbow","手肘"],["crown","皇冠"],["empty","空的"],
+["early","早期的"],["enter","進入"],["foggy","有霧的"],["heavy","重的"],
+["glove","手套"],["hotel","飯店"],["group","團體"],["hurry","趕快"],
+["guess","猜"],["knife","刀子"],["large","大的"],["metal","金屬"],
+["later","之後"],["month","月份"],["leave","離開"],["noisy","吵鬧的"],
+["light","燈光"],["north","北方"],["lucky","幸運的"],["ocean","海洋"],
+["March","三月"],["pilot","機長"],["prize","獎賞"],["spend","花費"],
+["piece","一片"],["south","南方"],["quite","相當"],["sound","聲音"],
+["right","右邊"],["space","空間"],["ready","準備好"],["speak","說"],
+["score","分數"],["stage","舞台"],["smell","聞"],["still","仍然"],
+["snack","零食"],["swing","擺動"],["shelf","書架"],["across","跨越"],
+["taste","味道"],["actor","演員"],["twice","兩次"],["arrive","抵達"],
+["until","直到"],["artist","藝術家"],["visit","拜訪"],["August","八月"],
+["wheel","輪胎"],["autumn","秋天"],["while","當"],["anyone","任何人"],
+["x-ray","x光"],["appear","出現"],["before","之前"],["during","在…期間"],
+["bridge","橋"],["engine","引擎"],["borrow","借入"],["enough","足夠的"],
+["broken","破損"],["finish","完成"],["corner","角落"],["fridge","冰箱"],
+["decide","決定"],["follow","跟隨"],["design","設計"],["finger","手指"],
+["desert","沙漠"],["forget","忘記"],["future","未來"],["online","線上"],
+["get to","到達"],["planet","行星"],["insect","昆蟲"],["pocket","口袋"],
+["letter","信"],["pepper","胡椒"],["lovely","可愛的"],["puzzle","難題"],
+["minute","分鐘"],["repair","修理"],["member","會員"],["repeat","重複"],
+["museum","博物館"],["rocket","火箭"],["screen","螢幕"],["violin","小提琴"],
+["secret","秘密"],["waiter","服務生"],["should","應該"],["winner","冠軍"],
+["silver","銀色"],["winter","冬天"],["spring","春天"],["airport","機場"],
+["singer","歌手"],["already","已經"],["search","尋找"],["amazing","驚人的"],
+["summer","夏天"],["believe","相信"],["biscuit","餅乾"],["century","世紀"],
+["bandage","繃帶"],["collect","收集"],["bicycle","腳踏車"],["explain","解釋"]
+];
+
+let questions=[],wrong=[],index=0;
+let wrongCount=JSON.parse(localStorage.getItem("wrongCount")||"{}");
+
+function shuffle(a){return a.sort(()=>0.5-Math.random());}
+
+function start(){
+  questions=shuffle([...bank]).slice(0,10);
+  index=0;
+  wrong=[];
+  show();
+}
+
+function show(){
+  if(index<questions.length){
+    document.getElementById("qnum").innerText="第 "+(index+1)+" 題";
+    document.getElementById("question").innerText=questions[index][1];
+    document.getElementById("answer").value="";
+  }else{
+    localStorage.setItem("wrong",JSON.stringify(wrong));
+    document.getElementById("question").innerText="🎉 完成！";
+  }
+}
+
+function speak(){
+  let u=new SpeechSynthesisUtterance(questions[index][0]);
+  u.lang="en-US";
+  speechSynthesis.speak(u);
+}
+
+function next(){
+  let ans=document.getElementById("answer").value.toLowerCase();
+  let correct=questions[index][0];
+
+  if(ans!==correct){
+    wrong.push(questions[index]);
+    wrongCount[correct]=(wrongCount[correct]||0)+1;
+  }
+
+  index++;
+  show();
+}
+
+function review(){
+  let s=localStorage.getItem("wrong");
+  if(s){
+    questions=JSON.parse(s);
+    index=0;
+    show();
+  }
+}
+
+function rank(){
+  let arr=Object.entries(wrongCount).sort((a,b)=>b[1]-a[1]);
+  let html="<h3>錯最多排行榜</h3>";
+  arr.forEach((x,i)=>html+=`${i+1}. ${x[0]}（${x[1]}）<br>`);
+  document.getElementById("ranking").innerHTML=html;
+}
+
+window.onload=start;
+
+</script>
+
+</body>
+</html>
